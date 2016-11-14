@@ -2,5 +2,5 @@ package com.example
 
 import akka.actor._
 
-object DevicePollingConsumerDriver {
+object DevicePollingConsumerDriver extends CompletableApp(10) {
 }
