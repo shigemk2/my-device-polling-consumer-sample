@@ -99,12 +99,12 @@ class EvenNumberDevice() {
 class Timeout(withinMillis: Int) {
   val mark = currentTime
 
-  def isTimedOut(): Boolean = {
+  def isTimedOut: Boolean = {
     if (withinMillis == -1) false
     else currentTime - mark >= withinMillis
   }
 
-  private def currentTime(): Long = {
+  private def currentTime: Long = {
     new Date().getTime
   }
 }
