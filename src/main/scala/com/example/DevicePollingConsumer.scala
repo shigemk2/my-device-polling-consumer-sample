@@ -1,15 +1,43 @@
 package com.example
 
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 import akka.actor._
 
+import scala.concurrent.duration.Duration
 import scala.util.Random
 
 object DevicePollingConsumerDriver extends CompletableApp(10) {
 }
 
 case class Monitor()
+
+class CappedBackOffScheduler(
+                            minimumInterval: Int,
+                            maximumInterval: Int,
+                            system: ActorSystem,
+                            receiver: ActorRef,
+                            message: Any
+                            ) {
+  var interval = minimumInterval
+
+  def backOff = {
+    interval = interval * 2
+    if (interval > maximumInterval) interval = maximumInterval
+    schedule
+  }
+
+  def recet = {
+    interval = minimumInterval
+    schedule
+  }
+
+  private def schedule = {
+    val duration = Duration.create(interval, TimeUnit.MICROSECONDS)
+    system.scheduler.scheduleOnce(duration, receiver, message)
+  }
+}
 
 class EvenNumberDevice() {
   val random = new Random(99999)
