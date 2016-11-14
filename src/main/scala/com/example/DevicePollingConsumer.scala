@@ -3,6 +3,7 @@ package com.example
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
+import akka.actor.Actor.Receive
 import akka.actor._
 
 import scala.concurrent.duration.Duration
@@ -12,6 +13,34 @@ object DevicePollingConsumerDriver extends CompletableApp(10) {
 }
 
 case class Monitor()
+
+class EvenNumberMonitor(evenNumberDevice: EvenNumberDevice) extends Actor {
+  val scheduler =
+    new CappedBackOffScheduler(
+      500,
+      15000,
+      context.system,
+      self,
+      Monitor()
+    )
+
+  def monitor = {
+    val evenNumber = evenNumberDevice.nextEvenNumber(3)
+    if (evenNumber.isDefined) {
+      println(s"EVEN: ${evenNumber.get}")
+      scheduler.reset
+      DevicePollingConsumerDriver.completedStep()
+    } else {
+      println(s"MISS")
+      scheduler.backOff
+    }
+  }
+
+  override def receive: Receive = {
+    case request: Monitor =>
+      monitor
+  }
+}
 
 class CappedBackOffScheduler(
                             minimumInterval: Int,
@@ -28,7 +57,7 @@ class CappedBackOffScheduler(
     schedule
   }
 
-  def recet = {
+  def reset = {
     interval = minimumInterval
     schedule
   }
