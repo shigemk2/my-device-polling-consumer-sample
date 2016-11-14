@@ -10,6 +10,14 @@ import scala.concurrent.duration.Duration
 import scala.util.Random
 
 object DevicePollingConsumerDriver extends CompletableApp(10) {
+  val evenNumberDevice = new EvenNumberDevice()
+  val monitor = system.actorOf(Props(classOf[EvenNumberMonitor], evenNumberDevice), "evenNumberMonitor")
+
+  monitor ! Monitor()
+
+  awaitCompletion
+
+  println("DevicePollingConsumerDriver: completed.")
 }
 
 case class Monitor()
